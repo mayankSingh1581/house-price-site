@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>House Price Predictor</title>
+<style>
+  :root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  *, *::before, *::after { box-sizing: inherit; }
+  body { margin: 0; min-height: 100vh; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         background: linear-gradient(135deg, #1f3864, #2e5496); color: #1a1a1a; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .card { background: #fff; width: 100%; max-width: 480px; border-radius: 16px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  h1 { margin: 0 0 6px; font-size: 1.6rem; color: #1f3864; }
+  p.sub { margin: 0 0 24px; color: #555; font-size: .95rem; }
+  label { display: block; font-weight: 600; margin-bottom: 6px; font-size: .9rem; }
+  input { width: 100%; padding: 10px 12px; border: 1px solid #ccd; border-radius: 8px; font-size: 1rem; margin-bottom: 16px; }
+  input:focus { outline: 2px solid #2e5496; border-color: transparent; }
+  button { width: 100%; padding: 12px; background: #2e5496; color: #fff; border: 0; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+  button:hover { background: #1f3864; }
+  #result { margin-top: 22px; padding: 18px; border-radius: 10px; background: #eef3fb; text-align: center; display: none; }
+  #result .price { font-size: 1.7rem; font-weight: 700; color: #1f3864; }
+  #result .note { font-size: .8rem; color: #666; margin-top: 6px; }
+  .error { color: #b00020; font-size: .9rem; margin: -8px 0 12px; display: none; }
+  footer { margin-top: 20px; font-size: .75rem; color: #777; text-align: center; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>House Price Predictor</h1>
+  <p class="sub">Enter the details of a house to estimate its price using a Linear Regression model.</p>
+
+  <label for="area">Area (square feet)</label>
+  <input type="number" id="area" min="500" max="3500" value="2000">
+
+  <label for="bedrooms">Number of bedrooms</label>
+  <input type="number" id="bedrooms" min="1" max="5" value="3">
+
+  <label for="age">Age of house (years)</label>
+  <input type="number" id="age" min="0" max="30" value="5">
+
+  <div class="error" id="error"></div>
+  <button id="predictBtn">Predict Price</button>
+
+  <div id="result">
+    <div>Estimated price</div>
+    <div class="price" id="price"></div>
+    <div class="note">Model R² 0.989 · average error about 8,054 · for learning purposes only</div>
+  </div>
+
+  <footer>Mayank · BCA Project · Built with Python and scikit-learn</footer>
+</div>
+
+<script>
+  // Coefficients learned by LinearRegression in house_price.py (random_state=42)
+  const COEF = { area: 118.54247568467302, bedrooms: 4808.842007507257, age: -737.7132786904328 };
+  const INTERCEPT = 2782.3797761968162;
+
+  const fmt = n => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  function predict(area, bedrooms, age) {
+    return INTERCEPT + COEF.area * area + COEF.bedrooms * bedrooms + COEF.age * age;
+  }
+
+  document.getElementById("predictBtn").addEventListener("click", () => {
+    const area = parseFloat(document.getElementById("area").value);
+    const bedrooms = parseFloat(document.getElementById("bedrooms").value);
+    const age = parseFloat(document.getElementById("age").value);
+    const err = document.getElementById("error");
+    const result = document.getElementById("result");
+
+    if ([area, bedrooms, age].some(v => isNaN(v)) || area <= 0 || bedrooms < 0 || age < 0) {
+      err.textContent = "Please enter valid positive numbers for all fields.";
+      err.style.display = "block";
+      result.style.display = "none";
+      return;
+    }
+    err.style.display = "none";
+    document.getElementById("price").textContent = fmt(predict(area, bedrooms, age));
+    result.style.display = "block";
+  });
+</script>
+</body>
+</html>
